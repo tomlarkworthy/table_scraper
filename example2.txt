@@ -1,0 +1,14 @@
+       ESR                           Cut Tape
+      @ 25°C   Digi-Key             Price Each        Digi-Key     Tape and Reel     Citizen
+Fig.  (Max.)   Part No.          1      10      50    Part No.    Qty.    Pricing    Part No.
+                 Cylinder Typ Fork Crystals — SMT
+      50kΩ     8341-1-ND       .47     .41     .36   8341-2-ND   2,000   174.64/M   CR200T-768KDZB-UT
+ 1    50kΩ     8736-1-ND       .47     .41     .36   8736-2-ND   2,000   174.64/M   CR200T-768KDZY-UT
+      50kΩ     8340-1-ND       .47     .41     .36   8340-2-ND   2,000   174.64/M   CR200T-768KDZF-UT
+      50kΩ     8664-1-ND       .58     .50     .44   8664-2-ND   3,000   205.82/M   CJ206T-768KDZB-UT
+ 2                                                                                          
+      50kΩ     8663-1-ND       .58     .50     .44   8663-2-ND   3,000   205.82/M   CJ206T-768KDZF-UT
+                     Tuning Crystals — SMT
+ 3    65kΩ     8633-1-ND       .89     .77     .68   8633-2-ND   3,000   318.09/M   C130-768KDZF-UT
+      70kΩ     8751-1-ND      1.95    1.69    1.49   8751-2-ND   3,000   701.67/M   C315-768KEZF-UT
+      70kΩ     8730-1-ND      1.69    1.47    1.29   8730-2-ND   3,000   608.11/M   C315-768KDZY-UT
