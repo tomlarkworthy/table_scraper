@@ -69,6 +69,7 @@ Recently I have been banging my head trying to import a ton of data expressed
  Anyway I think I came up with a neat approach using probabalistic reasoning
  combined with mixed integer programming thats pretty robust to all sorts
  of real world issues.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -182,7 +183,7 @@ row_{j}\in\{header,\, entity,\, noise\}
 
 \begin_inset Formula 
 \[
-token_{t}\in\{unclassified,\, partnum\_dec,\, partnum\_val,\, ordercode\_dec,\, ordercode\_val\}
+token_{t}\in\{unclassified,\, partnum\_dec,\, partnum\_val,\, ordercode\_dec,\, ordercode\_val,unknow\_dec,unknown\_val\}
 \]
 
 \end_inset
@@ -267,7 +268,7 @@ The next thing is to ensure that only declarations appear in header rows,
 \begin_layout Standard
 \begin_inset Formula 
 \[
-is\_header_{j}\leq is\_partnum\_dec_{t}+is\_ordercode\_dec_{t}+unclassified_{t}
+is\_header_{j}=is\_partnum\_dec_{t}+is\_ordercode\_dec_{t}
 \]
 
 \end_inset
@@ -278,7 +279,7 @@ is\_header_{j}\leq is\_partnum\_dec_{t}+is\_ordercode\_dec_{t}+unclassified_{t}
 \begin_layout Standard
 \begin_inset Formula 
 \[
-is\_entity_{j}\leq is\_partnum\_val_{t}+is\_ordercode\_val_{t}+unclassified_{t}
+is\_entity_{j}=is\_partnum\_val_{t}+is\_ordercode\_val_{t}
 \]
 
 \end_inset
@@ -287,10 +288,7 @@ is\_entity_{j}\leq is\_partnum\_val_{t}+is\_ordercode\_val_{t}+unclassified_{t}
 \end_layout
 
 \begin_layout Standard
-The inequality permits a header row to optionally contain an unclassified
- token, without affecting the second entity row constraint.
- However, the pair of constraints together forbid declaration tokens to
- be in the same row as a value tokens.
+As each variable is either a one or a zero, 
 \end_layout
 
 \begin_layout Standard
@@ -445,7 +443,8 @@ max\,\sum_{t}\forall_{class}log(p(token_{t}=class|contents_{t}))
 \begin_layout Standard
 which a integer programming package like PuLP can solve very quickly.
  I have coded up this example in python (github) to demonstrate how easy
- it is to encode, once the constraint model has been worked out on paper.
+ it is to encode, once the constraint model has been worked out on paper
+ (all th.
 \end_layout
 
 \begin_layout Subsection
