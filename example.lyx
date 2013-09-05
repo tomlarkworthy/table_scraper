@@ -1,0 +1,456 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Section
+Probabalistic Scraping of Plain Text Tables 
+\end_layout
+
+\begin_layout Standard
+Recently I have been banging my head trying to import a ton of data expressed
+ in tabular form into a database.
+ Anyway I think I came up with a neat approach using probabalistic reasoning
+ combined with mixed integer programming thats pretty robust to all sorts
+ of real world issues.
+\end_layout
+
+\begin_layout Standard
+Plain text tables are quite interesting when encoutered in the wild.
+ They are highly compressed forms of data, but that's a double edged sword,
+ you can only understand the meaning of a particular table element if, and
+ only if, you understand the meaning of the row and column it is found within.
+ Unfortunatly, the meaning of columns and rows vary widly across a dataset
+ of many independant tables.
+ Consider the following abridged OCRed examples from the digikey catalogue:-
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+\size tiny
+\color foreground
+EXAMPLES
+\end_layout
+
+\begin_layout Standard
+These tables have: differing spatial layout of header fields (e.g.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+Cut Price Tape Each
+\begin_inset Quotes erd
+\end_inset
+
+), differing number of table header lines, different number of columns,
+ and some rows are not data but actually heirachical sub headings (e.g.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+CB3LV-3I 3.3V, ±50ppm, -40°C ~ 85°C
+\begin_inset Quotes erd
+\end_inset
+
+).
+ In the digikey world, ending in 
+\begin_inset Quotes eld
+\end_inset
+
+-ND
+\begin_inset Quotes erd
+\end_inset
+
+ is strong evidence that a token is a partnum, however, its not fool proof,
+ as lots of non-partnums also end in -ND (its a huge catalogue).
+ To decide whether 
+\begin_inset Quotes eld
+\end_inset
+
+297LVCT-ND
+\begin_inset Quotes erd
+\end_inset
+
+ is a product code, you need to reason over the entire table building up
+ evidence.
+ 
+\end_layout
+
+\begin_layout Standard
+To do the inference I represent the table structuring elements (rows and
+ columns) and the token labels as random catagorical variables.
+ A single character wide column is assigned a column type (ordercode, partnum)
+ or unkown.
+ A row is either a header, entity or noise.
+ A token is either unclassified, a declartions of a column type (e.g.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+Part No.
+\begin_inset Quotes erd
+\end_inset
+
+), or a value in a column type (e.g.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+281LVCT-ND
+\begin_inset Quotes erd
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+col_{i}\in\{ordercode,\, partnum,\, unknown\}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+row_{j}\in\{header,\, entity,\, noise\}
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+token_{t}\in\{unclassified,\, partnum\_dec,\, partnum\_val,\, ordercode\_dec,\, ordercode\_val\}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The important thing in a table is that 
+\shape italic
+values and declaration tokens have to match types, and be consistent over
+ an entire column
+\shape default
+.
+ We can express these hard logical constraints using mixed integer programming
+ (MIP).
+ The first step is to encode the variables states into numerical variables.
+ A catagorical variable is split into a one-of-n vector encoding.
+ For example, every column catagorical variable becomes three integer variables
+ each encoding a boolean state
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+is\_ordercode_{i}\in\{0,1\}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+is\_partnum_{i}\in\{0,1\}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+is\_unknown_{i}\in\{0,1\}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We force one of the variables to be one by adding a linear constraint, 
+\begin_inset Formula $is\_ordercode_{i}+is\_partnum_{i}+is\_unknown_{i}=1$
+\end_inset
+
+ for each 
+\begin_inset Formula $i$
+\end_inset
+
+.
+ We repeat this for the row and token catagoricals.
+\end_layout
+
+\begin_layout Standard
+The next thing is to ensure that only declarations appear in header rows,
+ and values in entity rows, for every row, 
+\begin_inset Formula $j$
+\end_inset
+
+, and token, 
+\begin_inset Formula $t$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+is\_header_{j}\leq is\_partnum\_dec_{t}+is\_ordercode\_dec_{t}+unclassified_{t}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+is\_entity_{j}\leq is\_partnum\_val_{t}+is\_ordercode\_val_{t}+unclassified_{t}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The inequality permits a header row to optionally contain an unclassified
+ token, without affecting the second entity row constraint.
+ However, the pair of constraints together forbid declaration tokens to
+ be in the same row as a value tokens.
+\end_layout
+
+\begin_layout Standard
+The final set of constraints is ensuring each column contains declarations
+ and values for a spefic column type.
+ Each token is one or more characters long, so each token intersects several
+ single character wide columns.
+ So for each token, 
+\begin_inset Formula $t$
+\end_inset
+
+, and for every column intersecting that token, 
+\begin_inset Formula $i$
+\end_inset
+
+ we add the following constraints
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+is\_partnum_{i}\leq is\_partnum\_val_{t}+is\_partnum\_dec_{t}+unclassified_{t}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+(and the same for 
+\begin_inset Formula $ordercode$
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Standard
+So at this point we have expressed the problem as a huge set of binary integer
+ variables, with linear constraints between them.
+ A MIP solver can now optimize any linear cost function involving those
+ variables subject to those constraints.
+ We choose our objective function to encode the probability of a labeling
+ which we maximize to give the maximum liklihood estimate (which tells us
+ which tokens are values).
+\end_layout
+
+\begin_layout Standard
+Given a number of naive, independant, classifiers, their joint probability
+ is their product, which is what we want to maximise.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+max\, p(v_{1}...v_{n})=max\,\prod_{i}^{n}p(v_{i})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The product term is not compatible with linear programming, so we note that
+ the maximization result is not affected by taking logs, which usefully
+ turns products into sums
+\begin_inset Formula 
+\[
+max\, p(v_{1}...v_{n})=log\, max\,\sum_{i}^{n}p(v_{i})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This we can express as an objective function for our MIP.
+ For this example I assign a probability of a token labeling based only
+ on the content of the token.
+ The three important cases I used were:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+p(token_{t}=partnum\_val|content.endswith("-ND"))=0.8
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+p(token_{t}=ordercode\_val|contents.contains("-"))=0.4
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+p(token_{t}=partnum\_dec|content.contains("Digi-Key"))=0.9
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A catch all case when no specific clues are present is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+p(token_{t}=unclassified|content.is\_none\, of\, the\, above)=0.3
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+You should theoretically fill in the missing combinations to make sure the
+ probabilities add up to one, but in practice it does not matter too much.
+\end_layout
+
+\begin_layout Standard
+So now we can express our maximum liklihood estimate objective function
+ as
+\begin_inset Formula 
+\[
+max\,\sum_{t}\forall_{class}log(p(token_{t}=class|contents_{t}))
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+which a integer programming package like PuLP can solve very quickly.
+ I have coded up this example in python (github) to demonstrate how easy
+ it is to encode, once the constraint model has been worked out on paper.
+\end_layout
+
+\begin_layout Subsection
+Results
+\end_layout
+
+\end_body
+\end_document
