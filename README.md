@@ -7,4 +7,7 @@ For an example run:-
 
 ./table_lp.py example1.txt
 
+will produce
+
+
 full writup including mathmatical explinations at http://www.edinburghhacklab.com
